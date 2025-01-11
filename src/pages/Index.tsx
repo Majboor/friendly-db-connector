@@ -1,25 +1,28 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { Database } from "@/integrations/supabase/types"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
+// Define a consistent question type
+type Question = {
+  content: string;
+  choices?: string[];
+  correctAnswer?: string;
+  passage?: string;
+  questions?: Array<{
+    question: string;
+    choices: string[];
+    correctAnswer: string;
+  }>;
+}
+
 export default function Index() {
   const [isLoading, setIsLoading] = useState(false)
-  const [question, setQuestion] = useState<{
-    content: string
-    choices?: string[]
-    correctAnswer?: string
-    passage?: string
-    questions?: Array<{
-      question: string
-      choices: string[]
-      correctAnswer: string
-    }>
-  } | null>(null)
+  const [question, setQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const { toast } = useToast()
@@ -45,7 +48,6 @@ export default function Index() {
 
       const data = await response.json()
       
-      // Parse the JSON string from the API response
       const parsedContent = JSON.parse(data.content)
       setQuestion(parsedContent)
       setSelectedAnswer(null)
@@ -66,9 +68,10 @@ export default function Index() {
   const checkAnswer = () => {
     if (!selectedAnswer || !question) return
 
-    const currentQuestion = question.questions?.[currentQuestionIndex] || question
-    const correctAnswer = currentQuestion.correctAnswer
+    const currentQuestion = getCurrentQuestion()
+    if (!currentQuestion) return
 
+    const correctAnswer = currentQuestion.correctAnswer
     if (!correctAnswer) return
 
     const isCorrect = selectedAnswer === correctAnswer
@@ -80,7 +83,6 @@ export default function Index() {
       variant: isCorrect ? "default" : "destructive",
     })
 
-    // If there are more questions, move to the next one
     if (question.questions && currentQuestionIndex < question.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
       setSelectedAnswer(null)
@@ -89,10 +91,15 @@ export default function Index() {
 
   const getCurrentQuestion = () => {
     if (!question) return null
-    if (question.questions) {
+    if (question.questions && question.questions[currentQuestionIndex]) {
       return question.questions[currentQuestionIndex]
     }
-    return question
+    // For single questions, create a consistent format
+    return {
+      question: question.content,
+      choices: question.choices || [],
+      correctAnswer: question.correctAnswer || ""
+    }
   }
 
   const currentQuestion = getCurrentQuestion()
@@ -128,7 +135,7 @@ export default function Index() {
         </div>
       )}
 
-      {question && !isLoading && (
+      {question && !isLoading && currentQuestion && (
         <Card className="p-6">
           <div className="prose max-w-none">
             {question.passage && (
@@ -138,39 +145,35 @@ export default function Index() {
               </div>
             )}
 
-            {currentQuestion && (
-              <>
-                <h2 className="text-xl font-semibold mb-4">
-                  Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
-                </h2>
-                <p className="mb-6">{currentQuestion.question}</p>
+            <h2 className="text-xl font-semibold mb-4">
+              Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
+            </h2>
+            <p className="mb-6">{currentQuestion.question}</p>
 
-                <div className="space-y-4">
-                  {currentQuestion.choices?.map((choice, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        id={`choice-${index}`}
-                        name="answer"
-                        value={choice}
-                        checked={selectedAnswer === choice}
-                        onChange={(e) => setSelectedAnswer(e.target.value)}
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor={`choice-${index}`}>{choice}</label>
-                    </div>
-                  ))}
+            <div className="space-y-4">
+              {currentQuestion.choices?.map((choice, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id={`choice-${index}`}
+                    name="answer"
+                    value={choice}
+                    checked={selectedAnswer === choice}
+                    onChange={(e) => setSelectedAnswer(e.target.value)}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor={`choice-${index}`}>{choice}</label>
                 </div>
+              ))}
+            </div>
 
-                <Button
-                  onClick={checkAnswer}
-                  disabled={!selectedAnswer}
-                  className="mt-6"
-                >
-                  Check Answer
-                </Button>
-              </>
-            )}
+            <Button
+              onClick={checkAnswer}
+              disabled={!selectedAnswer}
+              className="mt-6"
+            >
+              Check Answer
+            </Button>
           </div>
         </Card>
       )}

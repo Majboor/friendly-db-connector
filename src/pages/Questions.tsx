@@ -29,11 +29,19 @@ export default function Questions() {
   const [question, setQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [showRawAnswer, setShowRawAnswer] = useState(false)
   const { toast } = useToast()
+
+  // Helper function to clean up choices
+  const cleanChoice = (choice: string): string => {
+    // Remove any existing A), B), etc. from the start of the choice
+    return choice.replace(/^[A-E]\)\s*/, '').trim()
+  }
 
   const generateQuestion = async (type: PromptType) => {
     console.log("Generating question of type:", type)
     setIsLoading(true)
+    setShowRawAnswer(false)
     try {
       let endpoint = ""
       let response
@@ -65,9 +73,14 @@ export default function Questions() {
 
       // Format the response based on the question type
       if (type === "math_with_calculator" || type === "math_no_calculator") {
+        // Filter out any "choices" option if it exists in the choices array
+        const cleanedChoices = data.choices
+          .filter((choice: string) => !choice.toLowerCase().includes('choices'))
+          .map(cleanChoice)
+        
         setQuestion({
           content: data.question,
-          choices: data.choices,
+          choices: cleanedChoices,
           correctAnswer: data.correct_answer
         })
       } else {
@@ -76,7 +89,7 @@ export default function Questions() {
           passage: data.passage,
           questions: data.questions.map((q: any) => ({
             question: q.question,
-            choices: q.choices,
+            choices: q.choices.map(cleanChoice),
             correctAnswer: q.correct_answer,
             sentence: q.sentence,
             underlined: q.underlined
@@ -226,13 +239,26 @@ export default function Questions() {
               </RadioGroup>
             </div>
 
-            <Button
-              onClick={checkAnswer}
-              disabled={!selectedAnswer}
-              className="mt-6"
-            >
-              Check Answer
-            </Button>
+            <div className="flex gap-4 mt-6">
+              <Button
+                onClick={checkAnswer}
+                disabled={!selectedAnswer}
+              >
+                Check Answer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowRawAnswer(!showRawAnswer)}
+              >
+                {showRawAnswer ? "Hide Answer" : "Show Answer"}
+              </Button>
+            </div>
+
+            {showRawAnswer && currentQuestionData?.correctAnswer && (
+              <div className="mt-4 p-4 bg-muted rounded-md">
+                <p className="font-medium">Raw Answer: {currentQuestionData.correctAnswer}</p>
+              </div>
+            )}
           </div>
         </Card>
       )}

@@ -146,13 +146,22 @@ export default function Questions() {
   }
 
   const checkAnswer = () => {
-    if (!selectedAnswer || !question) return
+    if (!selectedAnswer || !question) {
+      console.log("No answer selected or no question available")
+      return
+    }
 
     const currentQuestion = getCurrentQuestion()
-    if (!currentQuestion) return
+    if (!currentQuestion) {
+      console.log("No current question available")
+      return
+    }
 
     const correctAnswer = currentQuestion.correctAnswer
-    if (!correctAnswer) return
+    if (!correctAnswer) {
+      console.log("No correct answer available")
+      return
+    }
 
     console.log("Selected Answer:", selectedAnswer)
     console.log("Correct Answer:", correctAnswer)
@@ -177,9 +186,12 @@ export default function Questions() {
       return
     }
 
-    const isCorrect = correctLetter === selectedLetter
+    // Compare the answers and show the appropriate toast
+    const isCorrect = selectedLetter === correctLetter
+    
+    // Force the toast to show by using a unique title each time
     toast({
-      title: isCorrect ? "Correct!" : "Incorrect",
+      title: isCorrect ? `Correct! (${selectedLetter})` : `Incorrect (${selectedLetter})`,
       description: isCorrect 
         ? "Great job! Try another question." 
         : `The correct answer was ${correctLetter}`,
@@ -270,14 +282,15 @@ export default function Questions() {
                 {getCurrentQuestion()?.choices?.map((choice, index) => {
                   const cleanedChoice = cleanChoice(choice)
                   if (!cleanedChoice) return null // Skip empty or "choices" options
+                  const letterOption = String.fromCharCode(65 + index)
                   return (
                     <div key={index} className="flex items-center space-x-2">
                       <RadioGroupItem
-                        value={String.fromCharCode(65 + index)}
+                        value={letterOption}
                         id={`choice-${index}`}
                       />
                       <Label htmlFor={`choice-${index}`}>
-                        {String.fromCharCode(65 + index)}) {cleanedChoice}
+                        {letterOption}) {cleanedChoice}
                       </Label>
                     </div>
                   )
@@ -289,6 +302,7 @@ export default function Questions() {
               <Button
                 onClick={checkAnswer}
                 disabled={!selectedAnswer}
+                variant="default"
               >
                 Check Answer
               </Button>

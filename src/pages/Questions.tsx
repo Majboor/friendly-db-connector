@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/integrations/supabase/client"
 import { Database } from "@/integrations/supabase/types"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
@@ -21,6 +20,8 @@ type Question = {
   }>;
 }
 
+const BASE_URL = "https://sat.techrealm.pk"
+
 export default function Questions() {
   const [isLoading, setIsLoading] = useState(false)
   const [question, setQuestion] = useState<Question | null>(null)
@@ -32,33 +33,55 @@ export default function Questions() {
     console.log("Generating question of type:", type)
     setIsLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      console.log("Session:", session)
+      let endpoint = ""
+      let response
+
+      switch (type) {
+        case "math_with_calculator":
+          endpoint = `${BASE_URL}/api/maths-question?use_calculator=true`
+          break
+        case "math_no_calculator":
+          endpoint = `${BASE_URL}/api/maths-question?use_calculator=false`
+          break
+        case "reading_passage":
+          endpoint = `${BASE_URL}/api/reading-question`
+          break
+        case "writing_passage":
+          endpoint = `${BASE_URL}/api/writing-question`
+          break
+        default:
+          throw new Error("Invalid question type")
+      }
+
+      const apiResponse = await fetch(endpoint)
+      if (!apiResponse.ok) {
+        throw new Error(`HTTP error! status: ${apiResponse.status}`)
+      }
       
-      if (!session) {
-        throw new Error('No session found. Please log in.')
+      const data = await apiResponse.json()
+      console.log("API Response:", data)
+
+      // Format the response based on the question type
+      if (type === "math_with_calculator" || type === "math_no_calculator") {
+        setQuestion({
+          content: data.question,
+          choices: data.choices,
+          correctAnswer: data.correct_answer
+        })
+      } else {
+        // For reading and writing questions
+        setQuestion({
+          passage: data.passage,
+          questions: data.questions.map((q: any) => ({
+            question: q.question,
+            choices: q.choices,
+            correctAnswer: q.correct_answer,
+            sentence: q.sentence,
+            underlined: q.underlined
+          }))
+        })
       }
 
-      console.log("Making request to generate-question function")
-      const response = await supabase.functions.invoke('generate-question', {
-        body: { prompt_type: type }
-      })
-
-      console.log("Response from function:", response)
-
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to generate question')
-      }
-
-      if (!response.data) {
-        throw new Error('No data received from the function')
-      }
-
-      console.log("Parsing response data:", response.data)
-      const parsedContent = JSON.parse(response.data.content)
-      console.log("Parsed content:", parsedContent)
-      
-      setQuestion(parsedContent)
       setSelectedAnswer(null)
       setCurrentQuestionIndex(0)
 

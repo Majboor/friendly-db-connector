@@ -136,58 +136,58 @@ export default function Questions() {
 
   return (
     <>
-      <WarpSpeedThree isVisible={true} />
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <h1 className="text-3xl font-bold text-center mb-8 text-white">SAT Practice Questions</h1>
+      <WarpSpeedThree isVisible={showRawAnswer} />
+      <div className={`container mx-auto px-4 py-8 relative z-10 transition-colors duration-300 ${showRawAnswer ? 'text-white' : 'text-foreground'}`}>
+        <h1 className="text-3xl font-bold text-center mb-8">SAT Practice Questions</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <Button
             onClick={() => generateQuestion("math_with_calculator")}
             disabled={isLoading}
-            className="bg-opacity-80 backdrop-blur-sm"
+            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
           >
             Math (Calculator)
           </Button>
           <Button
             onClick={() => generateQuestion("math_no_calculator")}
             disabled={isLoading}
-            className="bg-opacity-80 backdrop-blur-sm"
+            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
           >
             Math (No Calculator)
           </Button>
           <Button
             onClick={() => generateQuestion("reading_passage")}
             disabled={isLoading}
-            className="bg-opacity-80 backdrop-blur-sm"
+            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
           >
             Reading
           </Button>
           <Button
             onClick={() => generateQuestion("writing_passage")}
             disabled={isLoading}
-            className="bg-opacity-80 backdrop-blur-sm"
+            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
           >
             Writing
           </Button>
         </div>
 
         {isLoading && (
-          <div className="text-center text-white">
+          <div className="text-center">
             <p>Generating question...</p>
           </div>
         )}
 
         {question && !isLoading && getCurrentQuestion() && (
-          <Card className="p-6 bg-opacity-80 backdrop-blur-sm">
+          <Card className={`p-6 ${showRawAnswer ? 'bg-black/80 text-white' : 'bg-white/80'} backdrop-blur-sm transition-colors duration-300`}>
             <div className="prose max-w-none">
               {question.passage && (
                 <div className="mb-8">
-                  <h2 className="text-xl font-semibold mb-4">Passage</h2>
+                  <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''}`}>Passage</h2>
                   <p className="mb-6">{question.passage}</p>
                 </div>
               )}
 
-              <h2 className="text-xl font-semibold mb-4">
+              <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''}`}>
                 Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
               </h2>
               
@@ -222,8 +222,9 @@ export default function Questions() {
                         <RadioGroupItem
                           value={letter}
                           id={`choice-${index}`}
+                          className={showRawAnswer ? 'border-white' : ''}
                         />
-                        <Label htmlFor={`choice-${index}`}>
+                        <Label htmlFor={`choice-${index}`} className={showRawAnswer ? 'text-white' : ''}>
                           {letter}) {cleanedChoice}
                         </Label>
                       </div>
@@ -237,15 +238,15 @@ export default function Questions() {
                   onClick={checkAnswer}
                   disabled={!selectedAnswer}
                   variant="default"
-                  className="bg-opacity-80 backdrop-blur-sm"
+                  className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
                 >
                   {showRawAnswer ? "Hide Answer" : "Show Answer"}
                 </Button>
               </div>
 
               {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
-                <div className="mt-4 p-4 bg-muted rounded-md bg-opacity-80 backdrop-blur-sm">
-                  <p className="font-medium">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
+                <div className="mt-4 p-4 bg-white/10 rounded-md backdrop-blur-sm">
+                  <p className="font-medium text-white">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
                 </div>
               )}
             </div>

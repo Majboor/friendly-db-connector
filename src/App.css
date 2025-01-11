@@ -11,6 +11,7 @@ body {
   margin: 0;
   background: black;
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 canvas {

@@ -190,6 +190,32 @@ export default function Questions() {
     <>
       <WarpSpeedThree isVisible={showRawAnswer} />
       <div className="container mx-auto px-4 py-8 relative z-10 text-white">
+        <h1 className="text-3xl font-bold text-center mb-8 font-mono">SAT Practice Questions</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <Button
+            onClick={() => generateQuestion("math_with_calculator")}
+            disabled={isLoading}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+          >
+            Math (Calculator)
+          </Button>
+          <Button
+            onClick={() => generateQuestion("math_no_calculator")}
+            disabled={isLoading}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+          >
+            Math (No Calculator)
+          </Button>
+          <Button
+            onClick={() => generateQuestion("reading_passage")}
+            disabled={isLoading}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+          >
+            Reading
+          </Button>
+        </div>
+
         {isLoading && (
           <div className="text-center">
             <p className="font-mono animate-pulse">Generating question...</p>
@@ -310,7 +336,7 @@ export default function Questions() {
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-black/95 text-white border border-white/20">
-                    <AlertDialogCancel className="absolute right-4 top-4 rounded-sm opacity-100 text-white hover:opacity-70 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                    <AlertDialogCancel className="absolute right-4 top-4 rounded-sm opacity-100 hover:opacity-70 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
                       <X className="h-4 w-4" />
                       <span className="sr-only">Close</span>
                     </AlertDialogCancel>

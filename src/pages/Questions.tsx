@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Database } from "@/integrations/supabase/types"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
@@ -102,7 +104,6 @@ export default function Questions() {
     if (question.questions && question.questions[currentQuestionIndex]) {
       return question.questions[currentQuestionIndex]
     }
-    // For single questions, create a consistent format
     return {
       question: question.content || "",
       choices: question.choices || [],
@@ -206,20 +207,23 @@ export default function Questions() {
             <p className="mb-6">{getCurrentQuestion()?.question}</p>
 
             <div className="space-y-4">
-              {getCurrentQuestion()?.choices?.map((choice, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id={`choice-${index}`}
-                    name="answer"
-                    value={choice}
-                    checked={selectedAnswer === choice}
-                    onChange={(e) => setSelectedAnswer(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor={`choice-${index}`}>{choice}</label>
-                </div>
-              ))}
+              <RadioGroup
+                value={selectedAnswer || ""}
+                onValueChange={setSelectedAnswer}
+                className="space-y-3"
+              >
+                {getCurrentQuestion()?.choices?.map((choice, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      value={choice}
+                      id={`choice-${index}`}
+                    />
+                    <Label htmlFor={`choice-${index}`}>
+                      {String.fromCharCode(65 + index)}) {choice}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
 
             <Button

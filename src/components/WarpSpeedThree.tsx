@@ -99,7 +99,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
         }
       }
 
-      starsRef.current = starsRef.current.filter((star, i) => {
+      starsRef.current = starsRef.current.filter((star) => {
         if (star.sphere.position.z > cameraZRef.current) {
           scene.remove(star.sphere)
           return false
@@ -108,7 +108,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
         return true
       })
 
-      asteroidsRef.current = asteroidsRef.current.filter((asteroid, i) => {
+      asteroidsRef.current = asteroidsRef.current.filter((asteroid) => {
         if (asteroid.shape.position.z > cameraZRef.current) {
           scene.remove(asteroid.shape)
           return false

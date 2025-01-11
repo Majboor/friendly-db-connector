@@ -336,7 +336,7 @@ export default function Questions() {
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-black/95 text-white border border-white/20">
-                    <AlertDialogCancel className="absolute right-4 top-4 rounded-sm opacity-100 hover:opacity-70 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                    <AlertDialogCancel className="absolute right-4 top-4 rounded-sm text-white opacity-100 hover:opacity-70 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
                       <X className="h-4 w-4" />
                       <span className="sr-only">Close</span>
                     </AlertDialogCancel>

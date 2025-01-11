@@ -10,7 +10,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -23,7 +22,6 @@ serve(async (req) => {
       throw new Error('Together API key not found')
     }
 
-    // First, fetch the prompt from the database
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -49,7 +47,8 @@ serve(async (req) => {
 
     const prompt = prompts[0].content
 
-    // Call Together API with the prompt
+    console.log('Making API request with prompt:', prompt)
+
     const togetherResponse = await fetch(TOGETHER_API_URL, {
       method: 'POST',
       headers: {
@@ -58,11 +57,9 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: TOGETHER_MODEL,
-        messages: [
-          { role: 'user', content: prompt }
-        ],
+        messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 800
+        max_tokens: 1000
       })
     })
 
@@ -72,28 +69,20 @@ serve(async (req) => {
 
     const result = await togetherResponse.json()
     const aiResponse = result.choices[0].message.content
+    console.log('Raw AI response:', aiResponse)
 
-    // Format the response as a proper JSON object
     let formattedQuestion
     try {
-      // Try to parse if it's already JSON
+      // First try to parse as JSON
       formattedQuestion = JSON.parse(aiResponse)
     } catch {
-      // If not JSON, create a basic question format
-      formattedQuestion = {
-        content: aiResponse.split('\n')[0], // First line as question
-        choices: aiResponse
-          .split('\n')
-          .filter(line => line.trim().startsWith('A)') || 
-                         line.trim().startsWith('B)') || 
-                         line.trim().startsWith('C)') || 
-                         line.trim().startsWith('D)'))
-          .map(choice => choice.trim()),
-        correctAnswer: aiResponse
-          .split('\n')
-          .find(line => line.toLowerCase().includes('correct') || 
-                       line.toLowerCase().includes('answer'))
-          ?.split(':')[1]?.trim() || 'A)'
+      // If not JSON, parse based on question type
+      if (prompt_type.startsWith('math')) {
+        formattedQuestion = parseMathQuestion(aiResponse)
+      } else if (prompt_type === 'reading_passage') {
+        formattedQuestion = parseReadingQuestion(aiResponse)
+      } else if (prompt_type === 'writing_passage') {
+        formattedQuestion = parseWritingQuestion(aiResponse)
       }
     }
 
@@ -108,10 +97,108 @@ serve(async (req) => {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
+
+function parseMathQuestion(text: string) {
+  const lines = text.split('\n').filter(line => line.trim())
+  const questionLine = lines[0]
+  const choices = lines
+    .filter(line => /^[A-D]\)/.test(line.trim()))
+    .map(line => line.trim())
+  
+  const correctAnswerLine = lines.find(line => 
+    line.toLowerCase().includes('correct') || 
+    line.toLowerCase().includes('answer')
+  )
+  const correctAnswer = correctAnswerLine
+    ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
+    : 'A)'
+
+  return {
+    content: questionLine,
+    choices,
+    correctAnswer
+  }
+}
+
+function parseReadingQuestion(text: string) {
+  const passageMatch = text.match(/Passage:([\s\S]*?)(?=Questions:|$)/i)
+  const passage = passageMatch ? passageMatch[1].trim() : ''
+
+  const questionsMatch = text.match(/Questions:([\s\S]*)/i)
+  const questionsText = questionsMatch ? questionsMatch[1] : ''
+  
+  const questionBlocks = questionsText.split(/(?=\d+[\).])/g)
+    .filter(block => block.trim())
+    .map(block => {
+      const lines = block.split('\n').filter(line => line.trim())
+      const question = lines[0].replace(/^\d+[\).]/, '').trim()
+      const choices = lines
+        .filter(line => /^[A-D]\)/.test(line.trim()))
+        .map(line => line.trim())
+      
+      const correctAnswerLine = lines.find(line => 
+        line.toLowerCase().includes('correct') || 
+        line.toLowerCase().includes('answer')
+      )
+      const correctAnswer = correctAnswerLine
+        ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
+        : 'A)'
+
+      return { question, choices, correctAnswer }
+    })
+
+  return {
+    passage,
+    questions: questionBlocks
+  }
+}
+
+function parseWritingQuestion(text: string) {
+  const passageMatch = text.match(/Passage:([\s\S]*?)(?=Questions:|$)/i)
+  const passage = passageMatch ? passageMatch[1].trim() : ''
+
+  const questionsMatch = text.match(/Questions:([\s\S]*)/i)
+  const questionsText = questionsMatch ? questionsMatch[1] : ''
+  
+  const questionBlocks = questionsText.split(/(?=\d+[\).])/g)
+    .filter(block => block.trim())
+    .map(block => {
+      const lines = block.split('\n').filter(line => line.trim())
+      const question = lines[0].replace(/^\d+[\).]/, '').trim()
+      
+      const sentenceMatch = block.match(/Sentence:([\s\S]*?)(?=Underlined:|Choices:|$)/i)
+      const sentence = sentenceMatch ? sentenceMatch[1].trim() : undefined
+
+      const underlinedMatch = block.match(/Underlined:([\s\S]*?)(?=Choices:|$)/i)
+      const underlined = underlinedMatch ? underlinedMatch[1].trim() : undefined
+
+      const choices = lines
+        .filter(line => /^[A-D]\)/.test(line.trim()))
+        .map(line => line.trim())
+      
+      const correctAnswerLine = lines.find(line => 
+        line.toLowerCase().includes('correct') || 
+        line.toLowerCase().includes('answer')
+      )
+      const correctAnswer = correctAnswerLine
+        ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
+        : 'A)'
+
+      return { 
+        question,
+        sentence,
+        underlined,
+        choices,
+        correctAnswer
+      }
+    })
+
+  return {
+    passage,
+    questions: questionBlocks
+  }
+}

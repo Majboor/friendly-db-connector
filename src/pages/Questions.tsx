@@ -8,7 +8,7 @@ import { Database } from "@/integrations/supabase/types"
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
 type Question = {
-  content: string;
+  content?: string;
   choices?: string[];
   correctAnswer?: string;
   passage?: string;
@@ -81,7 +81,7 @@ export default function Questions() {
     }
     // For single questions, create a consistent format
     return {
-      question: question.content,
+      question: question.content || "",
       choices: question.choices || [],
       correctAnswer: question.correctAnswer || "",
       sentence: undefined,

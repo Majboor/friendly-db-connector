@@ -34,8 +34,8 @@ export default function Questions() {
 
   // Helper function to clean up choices
   const cleanChoice = (choice: string): string => {
-    // Remove any existing A), B), etc. from the start of the choice
-    return choice.replace(/^[A-E]\)\s*/, '').trim()
+    // Remove any existing A), B), etc. from the start of the choice and the word "choices"
+    return choice.toLowerCase() === 'choices' ? '' : choice.replace(/^[A-E]\)\s*/, '').trim()
   }
 
   // Helper function to normalize answer format
@@ -138,7 +138,7 @@ export default function Questions() {
     }
     return {
       question: question.content || "",
-      choices: question.choices || [],
+      choices: question.choices?.filter(choice => choice.toLowerCase() !== 'choices') || [],
       correctAnswer: question.correctAnswer || "",
       sentence: undefined,
       underlined: undefined
@@ -154,12 +154,17 @@ export default function Questions() {
     const correctAnswer = currentQuestion.correctAnswer
     if (!correctAnswer) return
 
+    console.log("Selected Answer:", selectedAnswer)
+    console.log("Correct Answer:", correctAnswer)
+
     // Apply all three validation checks
     const normalizedCorrect = normalizeAnswer(correctAnswer)
     const normalizedSelected = normalizeAnswer(selectedAnswer)
 
     const correctLetter = extractAnswerLetter(normalizedCorrect)
     const selectedLetter = extractAnswerLetter(normalizedSelected)
+
+    console.log("Normalized - Selected:", selectedLetter, "Correct:", correctLetter)
 
     // Final validation
     if (!isValidAnswer(correctLetter) || !isValidAnswer(selectedLetter)) {
@@ -262,17 +267,21 @@ export default function Questions() {
                 onValueChange={setSelectedAnswer}
                 className="space-y-3"
               >
-                {getCurrentQuestion()?.choices?.map((choice, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value={String.fromCharCode(65 + index)}
-                      id={`choice-${index}`}
-                    />
-                    <Label htmlFor={`choice-${index}`}>
-                      {String.fromCharCode(65 + index)}) {choice}
-                    </Label>
-                  </div>
-                ))}
+                {getCurrentQuestion()?.choices?.map((choice, index) => {
+                  const cleanedChoice = cleanChoice(choice)
+                  if (!cleanedChoice) return null // Skip empty or "choices" options
+                  return (
+                    <div key={index} className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value={String.fromCharCode(65 + index)}
+                        id={`choice-${index}`}
+                      />
+                      <Label htmlFor={`choice-${index}`}>
+                        {String.fromCharCode(65 + index)}) {cleanedChoice}
+                      </Label>
+                    </div>
+                  )
+                })}
               </RadioGroup>
             </div>
 

@@ -151,18 +151,15 @@ export default function Questions() {
     console.log("Selected Answer:", selectedAnswer)
     console.log("Raw Correct Answer:", correctAnswer)
     
-    // Extract just the letter from the correct answer (removing any trailing parenthesis)
-    const cleanCorrectAnswer = correctAnswer.replace(/[^A-D]/g, '')
-    
-    // Compare the answers directly with the cleaned raw answer
-    const isCorrect = selectedAnswer === cleanCorrectAnswer
+    // Simply compare the letter of the selected answer with the correct answer letter
+    const isCorrect = selectedAnswer === correctAnswer.charAt(0)
 
     // Show toast with the result
     toast({
       title: isCorrect ? "Correct!" : "Incorrect",
       description: isCorrect 
         ? `Well done! ${selectedAnswer} is the right answer.` 
-        : `The correct answer was ${cleanCorrectAnswer}. You selected ${selectedAnswer}.`,
+        : `The correct answer was ${correctAnswer.charAt(0)}. You selected ${selectedAnswer}.`,
       variant: isCorrect ? "default" : "destructive",
     })
 

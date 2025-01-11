@@ -59,7 +59,7 @@ serve(async (req) => {
         model: TOGETHER_MODEL,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1500
       })
     })
 
@@ -73,10 +73,8 @@ serve(async (req) => {
 
     let formattedQuestion
     try {
-      // First try to parse as JSON
       formattedQuestion = JSON.parse(aiResponse)
     } catch {
-      // If not JSON, parse based on question type
       if (prompt_type.startsWith('math')) {
         formattedQuestion = parseMathQuestion(aiResponse)
       } else if (prompt_type === 'reading_passage') {
@@ -103,102 +101,114 @@ serve(async (req) => {
 })
 
 function parseMathQuestion(text: string) {
-  const lines = text.split('\n').filter(line => line.trim())
-  const questionLine = lines[0]
-  const choices = lines
-    .filter(line => /^[A-D]\)/.test(line.trim()))
-    .map(line => line.trim())
-  
-  const correctAnswerLine = lines.find(line => 
-    line.toLowerCase().includes('correct') || 
-    line.toLowerCase().includes('answer')
-  )
-  const correctAnswer = correctAnswerLine
-    ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
-    : 'A)'
+  // Extract question
+  const questionMatch = text.match(/Question:\s*([^\n]+)/i)
+  const question = questionMatch ? questionMatch[1].trim() : ''
+
+  // Extract choices
+  const choices: string[] = []
+  const choiceMatches = text.matchAll(/[A-D]\)\s*([^\n]+)/g)
+  for (const match of choiceMatches) {
+    choices.push(`${match[0].trim()}`)
+  }
+
+  // Extract correct answer
+  const correctAnswerMatch = text.match(/Correct Answer:\s*([A-D])/i)
+  const correctAnswer = correctAnswerMatch ? `${correctAnswerMatch[1]})` : ''
 
   return {
-    content: questionLine,
+    content: question,
     choices,
     correctAnswer
   }
 }
 
 function parseReadingQuestion(text: string) {
-  const passageMatch = text.match(/Passage:([\s\S]*?)(?=Questions:|$)/i)
+  // Extract passage
+  const passageMatch = text.match(/READING PASSAGE:\s*\n\n([\s\S]*?)(?=\n\nREADING QUESTIONS:)/i)
   const passage = passageMatch ? passageMatch[1].trim() : ''
 
-  const questionsMatch = text.match(/Questions:([\s\S]*)/i)
-  const questionsText = questionsMatch ? questionsMatch[1] : ''
-  
-  const questionBlocks = questionsText.split(/(?=\d+[\).])/g)
-    .filter(block => block.trim())
-    .map(block => {
-      const lines = block.split('\n').filter(line => line.trim())
-      const question = lines[0].replace(/^\d+[\).]/, '').trim()
-      const choices = lines
-        .filter(line => /^[A-D]\)/.test(line.trim()))
-        .map(line => line.trim())
-      
-      const correctAnswerLine = lines.find(line => 
-        line.toLowerCase().includes('correct') || 
-        line.toLowerCase().includes('answer')
-      )
-      const correctAnswer = correctAnswerLine
-        ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
-        : 'A)'
+  // Extract questions
+  const questions: Array<{
+    question: string;
+    choices: string[];
+    correctAnswer: string;
+  }> = []
 
-      return { question, choices, correctAnswer }
-    })
+  const questionBlocks = text.split(/Question \d+:/g).slice(1)
+  
+  questionBlocks.forEach(block => {
+    const questionMatch = block.match(/([^\n]+)/)
+    const question = questionMatch ? questionMatch[1].trim() : ''
+
+    const choices: string[] = []
+    const choiceMatches = block.matchAll(/[A-D]\)\s*([^\n]+)/g)
+    for (const match of choiceMatches) {
+      choices.push(`${match[0].trim()}`)
+    }
+
+    const correctAnswerMatch = block.match(/Correct Answer:\s*([A-D])/i)
+    const correctAnswer = correctAnswerMatch ? `${correctAnswerMatch[1]})` : ''
+
+    if (question && choices.length > 0) {
+      questions.push({ question, choices, correctAnswer })
+    }
+  })
 
   return {
     passage,
-    questions: questionBlocks
+    questions
   }
 }
 
 function parseWritingQuestion(text: string) {
-  const passageMatch = text.match(/Passage:([\s\S]*?)(?=Questions:|$)/i)
+  // Extract passage
+  const passageMatch = text.match(/WRITING PASSAGE:\s*\n\n([\s\S]*?)(?=\n\nWRITING QUESTIONS:)/i)
   const passage = passageMatch ? passageMatch[1].trim() : ''
 
-  const questionsMatch = text.match(/Questions:([\s\S]*)/i)
-  const questionsText = questionsMatch ? questionsMatch[1] : ''
+  // Extract questions
+  const questions: Array<{
+    question: string;
+    sentence?: string;
+    underlined?: string;
+    choices: string[];
+    correctAnswer: string;
+  }> = []
+
+  const questionBlocks = text.split(/Question \d+:/g).slice(1)
   
-  const questionBlocks = questionsText.split(/(?=\d+[\).])/g)
-    .filter(block => block.trim())
-    .map(block => {
-      const lines = block.split('\n').filter(line => line.trim())
-      const question = lines[0].replace(/^\d+[\).]/, '').trim()
-      
-      const sentenceMatch = block.match(/Sentence:([\s\S]*?)(?=Underlined:|Choices:|$)/i)
-      const sentence = sentenceMatch ? sentenceMatch[1].trim() : undefined
+  questionBlocks.forEach(block => {
+    const questionMatch = block.match(/([^\n]+)/)
+    const question = questionMatch ? questionMatch[1].trim() : ''
 
-      const underlinedMatch = block.match(/Underlined:([\s\S]*?)(?=Choices:|$)/i)
-      const underlined = underlinedMatch ? underlinedMatch[1].trim() : undefined
+    const sentenceMatch = block.match(/Sentence:\s*([^\n]+)/i)
+    const sentence = sentenceMatch ? sentenceMatch[1].trim() : undefined
 
-      const choices = lines
-        .filter(line => /^[A-D]\)/.test(line.trim()))
-        .map(line => line.trim())
-      
-      const correctAnswerLine = lines.find(line => 
-        line.toLowerCase().includes('correct') || 
-        line.toLowerCase().includes('answer')
-      )
-      const correctAnswer = correctAnswerLine
-        ? correctAnswerLine.match(/[A-D]\)/)?.[0] || 'A)'
-        : 'A)'
+    const underlinedMatch = block.match(/Underlined:\s*([^\n]+)/i)
+    const underlined = underlinedMatch ? underlinedMatch[1].trim() : undefined
 
-      return { 
+    const choices: string[] = []
+    const choiceMatches = block.matchAll(/[A-D]\)\s*([^\n]+)/g)
+    for (const match of choiceMatches) {
+      choices.push(`${match[0].trim()}`)
+    }
+
+    const correctAnswerMatch = block.match(/Correct Answer:\s*([A-D])/i)
+    const correctAnswer = correctAnswerMatch ? `${correctAnswerMatch[1]})` : ''
+
+    if (question && choices.length > 0) {
+      questions.push({
         question,
         sentence,
         underlined,
         choices,
         correctAnswer
-      }
-    })
+      })
+    }
+  })
 
   return {
     passage,
-    questions: questionBlocks
+    questions
   }
 }

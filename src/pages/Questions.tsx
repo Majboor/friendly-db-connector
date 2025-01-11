@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { WarpSpeedThree } from "@/components/WarpSpeedThree"
 import ReactMarkdown from 'react-markdown'
+import { supabase } from "@/integrations/supabase/client"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
@@ -76,6 +77,19 @@ export default function Questions() {
       const data = await apiResponse.json()
       console.log("API Response:", data)
 
+      // Store the response in Supabase
+      const { error: storeError } = await supabase
+        .from('question_responses')
+        .insert({
+          question_type: type,
+          passage: data.passage,
+          questions: data.questions || data
+        })
+
+      if (storeError) {
+        console.error('Error storing response:', storeError)
+      }
+
       // Format the response based on the question type
       if (type === "math_with_calculator" || type === "math_no_calculator") {
         // Filter out any "choices" option if it exists in the choices array
@@ -90,15 +104,17 @@ export default function Questions() {
         })
       } else {
         // For reading and writing questions
+        const formattedQuestions = data.questions.map((q: any) => ({
+          question: q.question,
+          choices: q.choices.map(cleanChoice),
+          correctAnswer: q.correct_answer,
+          sentence: q.sentence,
+          underlined: q.underlined
+        }))
+
         setQuestion({
           passage: data.passage,
-          questions: data.questions.map((q: any) => ({
-            question: q.question,
-            choices: q.choices.map(cleanChoice),
-            correctAnswer: q.correct_answer,
-            sentence: q.sentence,
-            underlined: q.underlined
-          }))
+          questions: formattedQuestions
         })
       }
 

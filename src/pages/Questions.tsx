@@ -330,7 +330,7 @@ export default function Questions() {
                       className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
                       onClick={checkAnswer}
                     >
-                      Show Answer
+                      {showRawAnswer ? "Hide Answer" : "Show Answer"}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-black/95 text-white border border-white/20">
@@ -351,6 +351,12 @@ export default function Questions() {
                   </Button>
                 )}
               </div>
+
+              {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
+                <div className="mt-4 p-4 bg-black/80 rounded-md backdrop-blur-sm border border-white/20">
+                  <p className="font-medium text-white">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
+                </div>
+              )}
             </div>
           </Card>
         )}

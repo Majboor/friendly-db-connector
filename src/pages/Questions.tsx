@@ -138,35 +138,35 @@ export default function Questions() {
   return (
     <>
       <WarpSpeedThree isVisible={showRawAnswer} />
-      <div className={`container mx-auto px-4 py-8 relative z-10 transition-colors duration-300 ${showRawAnswer ? 'text-white' : 'text-foreground'}`}>
+      <div className="container mx-auto px-4 py-8 relative z-10 text-white">
         <h1 className="text-3xl font-bold text-center mb-8 font-mono">SAT Practice Questions</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <Button
             onClick={() => generateQuestion("math_with_calculator")}
             disabled={isLoading}
-            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
           >
             Math (Calculator)
           </Button>
           <Button
             onClick={() => generateQuestion("math_no_calculator")}
             disabled={isLoading}
-            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
           >
             Math (No Calculator)
           </Button>
           <Button
             onClick={() => generateQuestion("reading_passage")}
             disabled={isLoading}
-            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
           >
             Reading
           </Button>
           <Button
             onClick={() => generateQuestion("writing_passage")}
             disabled={isLoading}
-            className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
+            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
           >
             Writing
           </Button>
@@ -174,23 +174,23 @@ export default function Questions() {
 
         {isLoading && (
           <div className="text-center">
-            <p className="font-mono">Generating question...</p>
+            <p className="font-mono animate-pulse">Generating question...</p>
           </div>
         )}
 
         {question && !isLoading && getCurrentQuestion() && (
-          <Card className={`p-6 ${showRawAnswer ? 'bg-black/80 text-white' : 'bg-white/80'} backdrop-blur-sm transition-colors duration-300`}>
+          <Card className="p-6 bg-black/80 text-white backdrop-blur-sm border border-white/20">
             <div className="prose max-w-none content-container">
               {question.passage && (
                 <div className="mb-8">
-                  <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''} font-mono`}>Passage</h2>
+                  <h2 className="text-xl font-semibold mb-4 text-white font-mono">Passage</h2>
                   <ReactMarkdown className="mb-6 font-mono leading-relaxed prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
                     {question.passage}
                   </ReactMarkdown>
                 </div>
               )}
 
-              <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''} font-mono`}>
+              <h2 className="text-xl font-semibold mb-4 text-white font-mono">
                 Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
               </h2>
               
@@ -231,9 +231,9 @@ export default function Questions() {
                         <RadioGroupItem
                           value={letter}
                           id={`choice-${index}`}
-                          className={showRawAnswer ? 'border-white' : ''}
+                          className="border-white"
                         />
-                        <Label htmlFor={`choice-${index}`} className={showRawAnswer ? 'text-white' : ''}>
+                        <Label htmlFor={`choice-${index}`} className="text-white">
                           {letter}) <ReactMarkdown className="inline font-mono prose-p:my-0 prose-strong:text-inherit prose-em:text-inherit">{cleanedChoice}</ReactMarkdown>
                         </Label>
                       </div>
@@ -246,15 +246,14 @@ export default function Questions() {
                 <Button
                   onClick={checkAnswer}
                   disabled={!selectedAnswer}
-                  variant="default"
-                  className={`${showRawAnswer ? 'bg-white text-black hover:bg-gray-200' : ''} backdrop-blur-sm`}
+                  className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
                 >
                   {showRawAnswer ? "Hide Answer" : "Show Answer"}
                 </Button>
               </div>
 
               {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
-                <div className="mt-4 p-4 bg-white/10 rounded-md backdrop-blur-sm">
+                <div className="mt-4 p-4 bg-black/80 rounded-md backdrop-blur-sm border border-white/20">
                   <p className="font-medium text-white">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
                 </div>
               )}

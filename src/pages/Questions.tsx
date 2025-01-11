@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label"
 import { WarpSpeedThree } from "@/components/WarpSpeedThree"
 import ReactMarkdown from 'react-markdown'
 import { supabase } from "@/integrations/supabase/client"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
@@ -315,13 +323,25 @@ export default function Questions() {
                     Previous
                   </Button>
                 )}
-                <Button
-                  onClick={checkAnswer}
-                  disabled={!selectedAnswer}
-                  className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
-                >
-                  {showRawAnswer ? "Hide Answer" : "Show Answer"}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      disabled={!selectedAnswer}
+                      className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+                      onClick={checkAnswer}
+                    >
+                      Show Answer
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-black/95 text-white border border-white/20">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Correct Answer</AlertDialogTitle>
+                      <AlertDialogDescription className="text-white">
+                        {getCurrentQuestion()?.correctAnswer}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                  </AlertDialogContent>
+                </AlertDialog>
                 {question.questions && currentQuestionIndex < question.questions.length - 1 && (
                   <Button
                     onClick={handleNextQuestion}
@@ -331,12 +351,6 @@ export default function Questions() {
                   </Button>
                 )}
               </div>
-
-              {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
-                <div className="mt-4 p-4 bg-black/80 rounded-md backdrop-blur-sm border border-white/20">
-                  <p className="font-medium text-white">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
-                </div>
-              )}
             </div>
           </Card>
         )}

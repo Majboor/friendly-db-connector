@@ -6,6 +6,7 @@ import { Database } from "@/integrations/supabase/types"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { WarpSpeedThree } from "@/components/WarpSpeedThree"
+import ReactMarkdown from 'react-markdown'
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
@@ -183,7 +184,9 @@ export default function Questions() {
               {question.passage && (
                 <div className="mb-8">
                   <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''} font-mono`}>Passage</h2>
-                  <p className="mb-6 font-mono leading-relaxed">{question.passage}</p>
+                  <ReactMarkdown className="mb-6 font-mono leading-relaxed prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                    {question.passage}
+                  </ReactMarkdown>
                 </div>
               )}
 
@@ -194,18 +197,24 @@ export default function Questions() {
               {getCurrentQuestion()?.sentence && (
                 <div className="mb-4">
                   <p className="font-mono font-medium">Sentence:</p>
-                  <p className="font-mono">{getCurrentQuestion()?.sentence}</p>
+                  <ReactMarkdown className="font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                    {getCurrentQuestion()?.sentence}
+                  </ReactMarkdown>
                 </div>
               )}
               
               {getCurrentQuestion()?.underlined && (
                 <div className="mb-4">
                   <p className="font-mono font-medium">Underlined portion:</p>
-                  <p className="font-mono underline">{getCurrentQuestion()?.underlined}</p>
+                  <ReactMarkdown className="font-mono underline prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                    {getCurrentQuestion()?.underlined}
+                  </ReactMarkdown>
                 </div>
               )}
               
-              <p className="mb-6 whitespace-pre-line font-mono">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
+              <ReactMarkdown className="mb-6 whitespace-pre-line font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                {getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}
+              </ReactMarkdown>
 
               <div className="space-y-4">
                 <RadioGroup
@@ -225,7 +234,7 @@ export default function Questions() {
                           className={showRawAnswer ? 'border-white' : ''}
                         />
                         <Label htmlFor={`choice-${index}`} className={showRawAnswer ? 'text-white' : ''}>
-                          {letter}) {cleanedChoice}
+                          {letter}) <ReactMarkdown className="inline font-mono prose-p:my-0 prose-strong:text-inherit prose-em:text-inherit">{cleanedChoice}</ReactMarkdown>
                         </Label>
                       </div>
                     )

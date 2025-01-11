@@ -60,7 +60,9 @@ serve(async (req) => {
         model: TOGETHER_MODEL,
         messages: [
           { role: 'user', content: prompt }
-        ]
+        ],
+        temperature: 0.7,
+        max_tokens: 800
       })
     })
 
@@ -69,10 +71,36 @@ serve(async (req) => {
     }
 
     const result = await togetherResponse.json()
-    const content = result.choices[0].message.content
+    const aiResponse = result.choices[0].message.content
+
+    // Format the response as a proper JSON object
+    let formattedQuestion
+    try {
+      // Try to parse if it's already JSON
+      formattedQuestion = JSON.parse(aiResponse)
+    } catch {
+      // If not JSON, create a basic question format
+      formattedQuestion = {
+        content: aiResponse.split('\n')[0], // First line as question
+        choices: aiResponse
+          .split('\n')
+          .filter(line => line.trim().startsWith('A)') || 
+                         line.trim().startsWith('B)') || 
+                         line.trim().startsWith('C)') || 
+                         line.trim().startsWith('D)'))
+          .map(choice => choice.trim()),
+        correctAnswer: aiResponse
+          .split('\n')
+          .find(line => line.toLowerCase().includes('correct') || 
+                       line.toLowerCase().includes('answer'))
+          ?.split(':')[1]?.trim() || 'A)'
+      }
+    }
+
+    console.log('Formatted question:', formattedQuestion)
 
     return new Response(
-      JSON.stringify({ content }),
+      JSON.stringify({ content: JSON.stringify(formattedQuestion) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 

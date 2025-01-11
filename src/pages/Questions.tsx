@@ -77,6 +77,9 @@ export default function Questions() {
       const data = await apiResponse.json()
       console.log("API Response:", data)
 
+      // Get the current user session
+      const { data: { session } } = await supabase.auth.getSession()
+      
       // Store the response in Supabase
       const { error: storeError } = await supabase
         .from('question_responses')
@@ -84,11 +87,16 @@ export default function Questions() {
           question_type: type,
           passage: data.passage || null,
           questions: data.questions || data,
-          user_id: null // We'll add user authentication later
+          user_id: session?.user?.id || null // Explicitly set to null for anonymous users
         })
 
       if (storeError) {
         console.error('Error storing response:', storeError)
+        toast({
+          title: "Error",
+          description: "Failed to store question response. Please try again.",
+          variant: "destructive",
+        })
       }
 
       // Format the response based on the question type

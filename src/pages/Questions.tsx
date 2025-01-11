@@ -184,7 +184,12 @@ export default function Questions() {
               {question.passage && (
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-4 text-white font-mono">Passage</h2>
-                  <ReactMarkdown className="mb-6 font-mono leading-relaxed prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                  <ReactMarkdown 
+                    className="mb-6 font-mono leading-relaxed prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
+                    components={{
+                      p: ({node, ...props}) => <p className="whitespace-pre-wrap" {...props} />
+                    }}
+                  >
                     {question.passage}
                   </ReactMarkdown>
                 </div>
@@ -197,7 +202,12 @@ export default function Questions() {
               {getCurrentQuestion()?.sentence && (
                 <div className="mb-4">
                   <p className="font-mono font-medium">Sentence:</p>
-                  <ReactMarkdown className="font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                  <ReactMarkdown 
+                    className="font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
+                    components={{
+                      p: ({node, ...props}) => <p className="whitespace-pre-wrap" {...props} />
+                    }}
+                  >
                     {getCurrentQuestion()?.sentence}
                   </ReactMarkdown>
                 </div>
@@ -206,13 +216,23 @@ export default function Questions() {
               {getCurrentQuestion()?.underlined && (
                 <div className="mb-4">
                   <p className="font-mono font-medium">Underlined portion:</p>
-                  <ReactMarkdown className="font-mono underline prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+                  <ReactMarkdown 
+                    className="font-mono underline prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
+                    components={{
+                      p: ({node, ...props}) => <p className="whitespace-pre-wrap" {...props} />
+                    }}
+                  >
                     {getCurrentQuestion()?.underlined}
                   </ReactMarkdown>
                 </div>
               )}
               
-              <ReactMarkdown className="mb-6 whitespace-pre-line font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit">
+              <ReactMarkdown 
+                className="mb-6 font-mono prose-p:my-2 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
+                components={{
+                  p: ({node, ...props}) => <p className="whitespace-pre-wrap" {...props} />
+                }}
+              >
                 {getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}
               </ReactMarkdown>
 
@@ -234,7 +254,14 @@ export default function Questions() {
                           className="border-white"
                         />
                         <Label htmlFor={`choice-${index}`} className="text-white">
-                          {letter}) <ReactMarkdown className="inline font-mono prose-p:my-0 prose-strong:text-inherit prose-em:text-inherit">{cleanedChoice}</ReactMarkdown>
+                          {letter}) <ReactMarkdown 
+                            className="inline font-mono prose-p:my-0 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
+                            components={{
+                              p: ({node, ...props}) => <span className="whitespace-pre-wrap" {...props} />
+                            }}
+                          >
+                            {cleanedChoice}
+                          </ReactMarkdown>
                         </Label>
                       </div>
                     )

@@ -30,6 +30,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
     cameraRef.current = camera
 
     const renderer = new THREE.WebGLRenderer({ alpha: true })
+    renderer.setClearColor('#000000', 1) // Set clear color to pure black
     renderer.setSize(window.innerWidth, window.innerHeight)
     containerRef.current.appendChild(renderer.domElement)
     rendererRef.current = renderer
@@ -51,7 +52,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
 
     const newStar = () => {
       const geometry = new THREE.SphereGeometry(1, 8, 8)
-      const material = new THREE.MeshBasicMaterial({ color: 'white' })
+      const material = new THREE.MeshBasicMaterial({ color: '#FFFFFF' }) // Pure white stars
       const sphere = new THREE.Mesh(geometry, material)
       scene.add(sphere)
 

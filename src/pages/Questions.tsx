@@ -31,9 +31,11 @@ export default function Questions() {
   const generateQuestion = async (type: PromptType) => {
     setIsLoading(true)
     try {
-      const { data: { publicUrl } } = supabase.storage
-        .from('public')
-        .getPublicUrl('anon-key.txt')
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        throw new Error('No session found. Please log in.')
+      }
 
       const response = await fetch(
         'https://ecmwlutgcezdgndosiac.supabase.co/functions/v1/generate-question',
@@ -41,18 +43,18 @@ export default function Questions() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabase.auth.getSession()}`
+            'Authorization': `Bearer ${session.access_token}`
           },
           body: JSON.stringify({ prompt_type: type })
         }
       )
 
       if (!response.ok) {
-        throw new Error('Failed to generate question')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to generate question')
       }
 
       const data = await response.json()
-      
       const parsedContent = JSON.parse(data.content)
       setQuestion(parsedContent)
       setSelectedAnswer(null)
@@ -62,7 +64,7 @@ export default function Questions() {
       console.error('Error generating question:', error)
       toast({
         title: "Error",
-        description: "Failed to generate question. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate question. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -148,7 +150,7 @@ export default function Questions() {
         </div>
       )}
 
-      {question && !isLoading && currentQuestionData && (
+      {question && !isLoading && getCurrentQuestion() && (
         <Card className="p-6">
           <div className="prose max-w-none">
             {question.passage && (

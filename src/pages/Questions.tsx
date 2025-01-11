@@ -204,13 +204,6 @@ export default function Questions() {
           >
             Reading
           </Button>
-          <Button
-            onClick={() => generateQuestion("writing_passage")}
-            disabled={isLoading}
-            className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
-          >
-            Writing
-          </Button>
         </div>
 
         {isLoading && (

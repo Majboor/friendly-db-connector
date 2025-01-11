@@ -3,11 +3,13 @@ import Index from "@/pages/Index"
 import Questions from "@/pages/Questions"
 import Admin from "@/pages/Admin"
 import AdminAuth from "@/pages/AdminAuth"
+import { WarpSpeedBackground } from "@/components/WarpSpeedBackground"
 import "./App.css"
 
 function App() {
   return (
     <Router>
+      <WarpSpeedBackground />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/questions" element={<Questions />} />

@@ -13,8 +13,15 @@ export default function Index() {
     content: string
     choices?: string[]
     correctAnswer?: string
+    passage?: string
+    questions?: Array<{
+      question: string
+      choices: string[]
+      correctAnswer: string
+    }>
   } | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const { toast } = useToast()
 
   const generateQuestion = async (type: PromptType) => {
@@ -42,6 +49,7 @@ export default function Index() {
       const parsedContent = JSON.parse(data.content)
       setQuestion(parsedContent)
       setSelectedAnswer(null)
+      setCurrentQuestionIndex(0)
 
     } catch (error) {
       console.error('Error generating question:', error)
@@ -56,17 +64,38 @@ export default function Index() {
   }
 
   const checkAnswer = () => {
-    if (!selectedAnswer || !question?.correctAnswer) return
+    if (!selectedAnswer || !question) return
 
-    const isCorrect = selectedAnswer === question.correctAnswer
+    const currentQuestion = question.questions?.[currentQuestionIndex] || question
+    const correctAnswer = currentQuestion.correctAnswer
+
+    if (!correctAnswer) return
+
+    const isCorrect = selectedAnswer === correctAnswer
     toast({
       title: isCorrect ? "Correct!" : "Incorrect",
       description: isCorrect 
         ? "Great job! Try another question." 
-        : `The correct answer was ${question.correctAnswer}`,
+        : `The correct answer was ${correctAnswer}`,
       variant: isCorrect ? "default" : "destructive",
     })
+
+    // If there are more questions, move to the next one
+    if (question.questions && currentQuestionIndex < question.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1)
+      setSelectedAnswer(null)
+    }
   }
+
+  const getCurrentQuestion = () => {
+    if (!question) return null
+    if (question.questions) {
+      return question.questions[currentQuestionIndex]
+    }
+    return question
+  }
+
+  const currentQuestion = getCurrentQuestion()
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -102,35 +131,46 @@ export default function Index() {
       {question && !isLoading && (
         <Card className="p-6">
           <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-4">Question</h2>
-            <p className="mb-6">{question.content}</p>
-
-            {question.choices && (
-              <div className="space-y-4">
-                {question.choices.map((choice, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id={`choice-${index}`}
-                      name="answer"
-                      value={choice}
-                      checked={selectedAnswer === choice}
-                      onChange={(e) => setSelectedAnswer(e.target.value)}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor={`choice-${index}`}>{choice}</label>
-                  </div>
-                ))}
+            {question.passage && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Passage</h2>
+                <p className="mb-6">{question.passage}</p>
               </div>
             )}
 
-            <Button
-              onClick={checkAnswer}
-              disabled={!selectedAnswer}
-              className="mt-6"
-            >
-              Check Answer
-            </Button>
+            {currentQuestion && (
+              <>
+                <h2 className="text-xl font-semibold mb-4">
+                  Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
+                </h2>
+                <p className="mb-6">{currentQuestion.question}</p>
+
+                <div className="space-y-4">
+                  {currentQuestion.choices?.map((choice, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id={`choice-${index}`}
+                        name="answer"
+                        value={choice}
+                        checked={selectedAnswer === choice}
+                        onChange={(e) => setSelectedAnswer(e.target.value)}
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor={`choice-${index}`}>{choice}</label>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={checkAnswer}
+                  disabled={!selectedAnswer}
+                  className="mt-6"
+                >
+                  Check Answer
+                </Button>
+              </>
+            )}
           </div>
         </Card>
       )}

@@ -1,11 +1,15 @@
-import { PromptSeeder } from "@/components/PromptSeeder"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Admin from "@/pages/Admin"
 import "./App.css"
 
 function App() {
   return (
-    <div className="container mx-auto">
-      <PromptSeeder />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<div className="container mx-auto">Home Page</div>} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+    </Router>
   )
 }
 

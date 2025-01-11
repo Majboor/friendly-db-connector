@@ -2,11 +2,20 @@ import { useEffect, useRef } from 'react';
 
 export const WarpSpeedBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationFrameRef = useRef<number>();
 
   useEffect(() => {
     const canvas = document.getElementById("universeCanvas") as HTMLCanvasElement;
+    if (!canvas) {
+      console.error("Canvas element not found");
+      return;
+    }
+
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      console.error("Could not get canvas context");
+      return;
+    }
 
     // Resize the canvas to fit the window
     canvas.width = window.innerWidth;
@@ -57,7 +66,7 @@ export const WarpSpeedBackground = () => {
 
     function animate() {
       drawWarpSpeed();
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     }
 
     // Adjust canvas size on window resize
@@ -72,6 +81,9 @@ export const WarpSpeedBackground = () => {
     // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, []);
 

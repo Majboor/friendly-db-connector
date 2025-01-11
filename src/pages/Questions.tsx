@@ -16,6 +16,8 @@ type Question = {
     question: string;
     choices: string[];
     correctAnswer: string;
+    sentence?: string;
+    underlined?: string;
   }>;
 }
 
@@ -29,13 +31,17 @@ export default function Questions() {
   const generateQuestion = async (type: PromptType) => {
     setIsLoading(true)
     try {
+      const { data: { publicUrl } } = supabase.storage
+        .from('public')
+        .getPublicUrl('anon-key.txt')
+
       const response = await fetch(
         'https://ecmwlutgcezdgndosiac.supabase.co/functions/v1/generate-question',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`
+            'Authorization': `Bearer ${supabase.auth.getSession()}`
           },
           body: JSON.stringify({ prompt_type: type })
         }
@@ -73,7 +79,9 @@ export default function Questions() {
     return {
       question: question.content,
       choices: question.choices || [],
-      correctAnswer: question.correctAnswer || ""
+      correctAnswer: question.correctAnswer || "",
+      sentence: undefined,
+      underlined: undefined
     }
   }
 
@@ -126,6 +134,12 @@ export default function Questions() {
         >
           Reading
         </Button>
+        <Button
+          onClick={() => generateQuestion("writing_passage")}
+          disabled={isLoading}
+        >
+          Writing
+        </Button>
       </div>
 
       {isLoading && (
@@ -147,6 +161,21 @@ export default function Questions() {
             <h2 className="text-xl font-semibold mb-4">
               Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
             </h2>
+            
+            {currentQuestionData.sentence && (
+              <div className="mb-4">
+                <p className="font-medium">Sentence:</p>
+                <p>{currentQuestionData.sentence}</p>
+              </div>
+            )}
+            
+            {currentQuestionData.underlined && (
+              <div className="mb-4">
+                <p className="font-medium">Underlined portion:</p>
+                <p className="underline">{currentQuestionData.underlined}</p>
+              </div>
+            )}
+            
             <p className="mb-6">{currentQuestionData.question}</p>
 
             <div className="space-y-4">

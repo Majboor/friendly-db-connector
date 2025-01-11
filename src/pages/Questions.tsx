@@ -138,7 +138,7 @@ export default function Questions() {
     <>
       <WarpSpeedThree isVisible={showRawAnswer} />
       <div className={`container mx-auto px-4 py-8 relative z-10 transition-colors duration-300 ${showRawAnswer ? 'text-white' : 'text-foreground'}`}>
-        <h1 className="text-3xl font-bold text-center mb-8">SAT Practice Questions</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 font-mono">SAT Practice Questions</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <Button
@@ -173,39 +173,39 @@ export default function Questions() {
 
         {isLoading && (
           <div className="text-center">
-            <p>Generating question...</p>
+            <p className="font-mono">Generating question...</p>
           </div>
         )}
 
         {question && !isLoading && getCurrentQuestion() && (
           <Card className={`p-6 ${showRawAnswer ? 'bg-black/80 text-white' : 'bg-white/80'} backdrop-blur-sm transition-colors duration-300`}>
-            <div className="prose max-w-none">
+            <div className="prose max-w-none content-container">
               {question.passage && (
                 <div className="mb-8">
-                  <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''}`}>Passage</h2>
-                  <p className="mb-6">{question.passage}</p>
+                  <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''} font-mono`}>Passage</h2>
+                  <p className="mb-6 font-mono leading-relaxed">{question.passage}</p>
                 </div>
               )}
 
-              <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''}`}>
+              <h2 className={`text-xl font-semibold mb-4 ${showRawAnswer ? 'text-white' : ''} font-mono`}>
                 Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
               </h2>
               
               {getCurrentQuestion()?.sentence && (
                 <div className="mb-4">
-                  <p className="font-medium">Sentence:</p>
-                  <p>{getCurrentQuestion()?.sentence}</p>
+                  <p className="font-mono font-medium">Sentence:</p>
+                  <p className="font-mono">{getCurrentQuestion()?.sentence}</p>
                 </div>
               )}
               
               {getCurrentQuestion()?.underlined && (
                 <div className="mb-4">
-                  <p className="font-medium">Underlined portion:</p>
-                  <p className="underline">{getCurrentQuestion()?.underlined}</p>
+                  <p className="font-mono font-medium">Underlined portion:</p>
+                  <p className="font-mono underline">{getCurrentQuestion()?.underlined}</p>
                 </div>
               )}
               
-              <p className="mb-6 whitespace-pre-line">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
+              <p className="mb-6 whitespace-pre-line font-mono">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
 
               <div className="space-y-4">
                 <RadioGroup

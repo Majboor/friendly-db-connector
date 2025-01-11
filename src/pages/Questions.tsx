@@ -135,117 +135,123 @@ export default function Questions() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <WarpSpeedThree isVisible={showRawAnswer} />
-      
-      <h1 className="text-3xl font-bold text-center mb-8">SAT Practice Questions</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <Button
-          onClick={() => generateQuestion("math_with_calculator")}
-          disabled={isLoading}
-        >
-          Math (Calculator)
-        </Button>
-        <Button
-          onClick={() => generateQuestion("math_no_calculator")}
-          disabled={isLoading}
-        >
-          Math (No Calculator)
-        </Button>
-        <Button
-          onClick={() => generateQuestion("reading_passage")}
-          disabled={isLoading}
-        >
-          Reading
-        </Button>
-        <Button
-          onClick={() => generateQuestion("writing_passage")}
-          disabled={isLoading}
-        >
-          Writing
-        </Button>
-      </div>
-
-      {isLoading && (
-        <div className="text-center">
-          <p>Generating question...</p>
+    <>
+      <WarpSpeedThree isVisible={true} />
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <h1 className="text-3xl font-bold text-center mb-8 text-white">SAT Practice Questions</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <Button
+            onClick={() => generateQuestion("math_with_calculator")}
+            disabled={isLoading}
+            className="bg-opacity-80 backdrop-blur-sm"
+          >
+            Math (Calculator)
+          </Button>
+          <Button
+            onClick={() => generateQuestion("math_no_calculator")}
+            disabled={isLoading}
+            className="bg-opacity-80 backdrop-blur-sm"
+          >
+            Math (No Calculator)
+          </Button>
+          <Button
+            onClick={() => generateQuestion("reading_passage")}
+            disabled={isLoading}
+            className="bg-opacity-80 backdrop-blur-sm"
+          >
+            Reading
+          </Button>
+          <Button
+            onClick={() => generateQuestion("writing_passage")}
+            disabled={isLoading}
+            className="bg-opacity-80 backdrop-blur-sm"
+          >
+            Writing
+          </Button>
         </div>
-      )}
 
-      {question && !isLoading && getCurrentQuestion() && (
-        <Card className="p-6">
-          <div className="prose max-w-none">
-            {question.passage && (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Passage</h2>
-                <p className="mb-6">{question.passage}</p>
-              </div>
-            )}
-
-            <h2 className="text-xl font-semibold mb-4">
-              Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
-            </h2>
-            
-            {getCurrentQuestion()?.sentence && (
-              <div className="mb-4">
-                <p className="font-medium">Sentence:</p>
-                <p>{getCurrentQuestion()?.sentence}</p>
-              </div>
-            )}
-            
-            {getCurrentQuestion()?.underlined && (
-              <div className="mb-4">
-                <p className="font-medium">Underlined portion:</p>
-                <p className="underline">{getCurrentQuestion()?.underlined}</p>
-              </div>
-            )}
-            
-            <p className="mb-6 whitespace-pre-line">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
-
-            <div className="space-y-4">
-              <RadioGroup
-                value={selectedAnswer || ""}
-                onValueChange={setSelectedAnswer}
-                className="space-y-3"
-              >
-                {getCurrentQuestion()?.choices?.map((choice, index) => {
-                  const cleanedChoice = cleanChoice(choice)
-                  if (!cleanedChoice) return null
-                  const letter = getLetterFromIndex(index)
-                  return (
-                    <div key={index} className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value={letter}
-                        id={`choice-${index}`}
-                      />
-                      <Label htmlFor={`choice-${index}`}>
-                        {letter}) {cleanedChoice}
-                      </Label>
-                    </div>
-                  )
-                })}
-              </RadioGroup>
-            </div>
-
-            <div className="flex gap-4 mt-6">
-              <Button
-                onClick={checkAnswer}
-                disabled={!selectedAnswer}
-                variant="default"
-              >
-                {showRawAnswer ? "Hide Answer" : "Show Answer"}
-              </Button>
-            </div>
-
-            {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
-              <div className="mt-4 p-4 bg-muted rounded-md">
-                <p className="font-medium">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
-              </div>
-            )}
+        {isLoading && (
+          <div className="text-center text-white">
+            <p>Generating question...</p>
           </div>
-        </Card>
-      )}
-    </div>
+        )}
+
+        {question && !isLoading && getCurrentQuestion() && (
+          <Card className="p-6 bg-opacity-80 backdrop-blur-sm">
+            <div className="prose max-w-none">
+              {question.passage && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4">Passage</h2>
+                  <p className="mb-6">{question.passage}</p>
+                </div>
+              )}
+
+              <h2 className="text-xl font-semibold mb-4">
+                Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
+              </h2>
+              
+              {getCurrentQuestion()?.sentence && (
+                <div className="mb-4">
+                  <p className="font-medium">Sentence:</p>
+                  <p>{getCurrentQuestion()?.sentence}</p>
+                </div>
+              )}
+              
+              {getCurrentQuestion()?.underlined && (
+                <div className="mb-4">
+                  <p className="font-medium">Underlined portion:</p>
+                  <p className="underline">{getCurrentQuestion()?.underlined}</p>
+                </div>
+              )}
+              
+              <p className="mb-6 whitespace-pre-line">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
+
+              <div className="space-y-4">
+                <RadioGroup
+                  value={selectedAnswer || ""}
+                  onValueChange={setSelectedAnswer}
+                  className="space-y-3"
+                >
+                  {getCurrentQuestion()?.choices?.map((choice, index) => {
+                    const cleanedChoice = cleanChoice(choice)
+                    if (!cleanedChoice) return null
+                    const letter = getLetterFromIndex(index)
+                    return (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value={letter}
+                          id={`choice-${index}`}
+                        />
+                        <Label htmlFor={`choice-${index}`}>
+                          {letter}) {cleanedChoice}
+                        </Label>
+                      </div>
+                    )
+                  })}
+                </RadioGroup>
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <Button
+                  onClick={checkAnswer}
+                  disabled={!selectedAnswer}
+                  variant="default"
+                  className="bg-opacity-80 backdrop-blur-sm"
+                >
+                  {showRawAnswer ? "Hide Answer" : "Show Answer"}
+                </Button>
+              </div>
+
+              {showRawAnswer && getCurrentQuestion()?.correctAnswer && (
+                <div className="mt-4 p-4 bg-muted rounded-md bg-opacity-80 backdrop-blur-sm">
+                  <p className="font-medium">Raw Answer: {getCurrentQuestion().correctAnswer}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+      </div>
+    </>
   )
 }

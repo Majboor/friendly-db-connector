@@ -20,7 +20,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
   const animationFrameRef = useRef<number>()
 
   useEffect(() => {
-    if (!containerRef.current || !isVisible) return
+    if (!containerRef.current) return
 
     const scene = new THREE.Scene()
     scene.fog = new THREE.Fog('#000000', 750, 1000)
@@ -29,7 +29,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
     cameraRef.current = camera
 
-    const renderer = new THREE.WebGLRenderer()
+    const renderer = new THREE.WebGLRenderer({ alpha: true })
     renderer.setSize(window.innerWidth, window.innerHeight)
     containerRef.current.appendChild(renderer.domElement)
     rendererRef.current = renderer
@@ -39,7 +39,9 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
     }
 
     const handleClick = () => {
-      lightSpeedRef.current = 2
+      if (isVisible) {
+        lightSpeedRef.current = 2
+      }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -91,7 +93,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
         starsRef.current.push(newStar())
       }
 
-      if (asteroidsRef.current.length < 10) {
+      if (asteroidsRef.current.length < 10 && isVisible) {
         asteroidSpawnRef.current -= 1
         if (asteroidSpawnRef.current === 0) {
           asteroidsRef.current.push(newAsteroid())
@@ -104,7 +106,7 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
           scene.remove(star.sphere)
           return false
         }
-        star.sphere.scale.z = lightSpeedRef.current
+        star.sphere.scale.z = isVisible ? lightSpeedRef.current : 1
         return true
       })
 
@@ -118,22 +120,24 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
         return true
       })
 
-      if (!speedStopRef.current) {
-        if (lightSpeedRef.current > 1) {
-          lightSpeedRef.current += 2
-        }
-        if (lightSpeedRef.current > 300) {
-          speedStopRef.current = true
-        }
-      } else {
-        lightSpeedRef.current -= 5
-        if (lightSpeedRef.current < 2) {
-          speedStopRef.current = false
-          lightSpeedRef.current = 1
+      if (isVisible) {
+        if (!speedStopRef.current) {
+          if (lightSpeedRef.current > 1) {
+            lightSpeedRef.current += 2
+          }
+          if (lightSpeedRef.current > 300) {
+            speedStopRef.current = true
+          }
+        } else {
+          lightSpeedRef.current -= 5
+          if (lightSpeedRef.current < 2) {
+            speedStopRef.current = false
+            lightSpeedRef.current = 1
+          }
         }
       }
 
-      if (lightSpeedRef.current > 150) {
+      if (isVisible && lightSpeedRef.current > 150) {
         cameraZRef.current -= lightSpeedRef.current / 2
       } else {
         cameraZRef.current -= 1
@@ -168,5 +172,5 @@ export function WarpSpeedThree({ isVisible }: WarpSpeedThreeProps) {
     }
   }, [isVisible])
 
-  return <div ref={containerRef} className={`fixed inset-0 ${isVisible ? '' : 'hidden'}`} />
+  return <div ref={containerRef} className="fixed inset-0" style={{ zIndex: -1 }} />
 }

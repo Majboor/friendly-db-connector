@@ -130,44 +130,7 @@ export default function Questions() {
   }
 
   const checkAnswer = () => {
-    if (!selectedAnswer || !question) {
-      console.log("No answer selected or no question available")
-      return
-    }
-
-    const currentQuestion = getCurrentQuestion()
-    if (!currentQuestion) {
-      console.log("No current question available")
-      return
-    }
-
-    const correctAnswer = currentQuestion.correctAnswer
-    if (!correctAnswer) {
-      console.log("No correct answer available")
-      return
-    }
-
-    // Log values for debugging
-    console.log("Selected Answer:", selectedAnswer)
-    console.log("Raw Correct Answer:", correctAnswer)
-    
-    // Simply compare the letter of the selected answer with the correct answer letter
-    const isCorrect = selectedAnswer === correctAnswer.charAt(0)
-
-    // Show toast with the result
-    toast({
-      title: isCorrect ? "Correct!" : "Incorrect",
-      description: isCorrect 
-        ? `Well done! ${selectedAnswer} is the right answer.` 
-        : `The correct answer was ${correctAnswer.charAt(0)}. You selected ${selectedAnswer}.`,
-      variant: isCorrect ? "default" : "destructive",
-    })
-
-    // Move to next question if available
-    if (question.questions && currentQuestionIndex < question.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
-      setSelectedAnswer(null)
-    }
+    setShowRawAnswer(!showRawAnswer)
   }
 
   return (
@@ -267,12 +230,6 @@ export default function Questions() {
                 onClick={checkAnswer}
                 disabled={!selectedAnswer}
                 variant="default"
-              >
-                Check Answer
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowRawAnswer(!showRawAnswer)}
               >
                 {showRawAnswer ? "Hide Answer" : "Show Answer"}
               </Button>

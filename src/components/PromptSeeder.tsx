@@ -2,8 +2,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
+import { Database } from "@/integrations/supabase/types";
 
-const prompts = [
+type PromptType = Database["public"]["Enums"]["prompt_type"];
+
+const prompts: {
+  type: PromptType;
+  content: string;
+  is_default: boolean;
+}[] = [
   {
     type: "reading_passage",
     content: `Create a passage for an SAT-style Reading Section. The passage should be between 500 and 750 words and written in a formal tone. It should focus on one of the following topics:

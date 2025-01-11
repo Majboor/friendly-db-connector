@@ -8,6 +8,16 @@ import { Label } from "@/components/ui/label"
 import { WarpSpeedThree } from "@/components/WarpSpeedThree"
 import ReactMarkdown from 'react-markdown'
 import { supabase } from "@/integrations/supabase/client"
+import { X } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 
 type PromptType = Database["public"]["Enums"]["prompt_type"]
 
@@ -315,13 +325,29 @@ export default function Questions() {
                     Previous
                   </Button>
                 )}
-                <Button
-                  onClick={checkAnswer}
-                  disabled={!selectedAnswer}
-                  className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
-                >
-                  {showRawAnswer ? "Hide Answer" : "Show Answer"}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      disabled={!selectedAnswer}
+                      className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+                      onClick={checkAnswer}
+                    >
+                      {showRawAnswer ? "Hide Answer" : "Show Answer"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-black/95 text-white border border-white/20">
+                    <AlertDialogCancel className="absolute right-4 top-4 rounded-sm text-white opacity-100 hover:opacity-70 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </AlertDialogCancel>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Correct Answer</AlertDialogTitle>
+                      <AlertDialogDescription className="text-white">
+                        {getCurrentQuestion()?.correctAnswer}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                  </AlertDialogContent>
+                </AlertDialog>
                 {question.questions && currentQuestionIndex < question.questions.length - 1 && (
                   <Button
                     onClick={handleNextQuestion}

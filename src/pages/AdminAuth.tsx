@@ -70,9 +70,19 @@ export default function AdminAuth() {
       )}
       <Auth
         supabaseClient={supabase}
-        appearance={{ theme: ThemeSupa }}
+        appearance={{ 
+          theme: ThemeSupa,
+          variables: {
+            default: {
+              colors: {
+                brand: '#404040',
+                brandAccent: '#2d2d2d'
+              }
+            }
+          }
+        }}
         providers={[]}
-        redirectTo={`${window.location.origin}/admin`}
+        redirectTo={window.location.origin + '/admin'}
       />
     </div>
   )

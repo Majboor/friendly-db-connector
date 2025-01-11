@@ -288,13 +288,16 @@ export default function Questions() {
                     if (!cleanedChoice) return null
                     const letter = getLetterFromIndex(index)
                     return (
-                      <div key={index} className="flex items-center space-x-2">
+                      <div key={index} className="flex items-center space-x-2 p-2 rounded-md transition-colors duration-200 hover:bg-white/10 data-[state=checked]:bg-white data-[state=checked]:text-black">
                         <RadioGroupItem
                           value={letter}
                           id={`choice-${index}`}
-                          className="border-white"
+                          className="border-white data-[state=checked]:border-black data-[state=checked]:bg-black"
                         />
-                        <Label htmlFor={`choice-${index}`} className="text-white">
+                        <Label 
+                          htmlFor={`choice-${index}`} 
+                          className="transition-colors duration-200 data-[state=checked]:text-black"
+                        >
                           {letter}) <ReactMarkdown 
                             className="inline font-mono prose-p:my-0 prose-strong:text-inherit prose-em:text-inherit whitespace-pre-wrap"
                             components={{

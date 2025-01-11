@@ -82,8 +82,9 @@ export default function Questions() {
         .from('question_responses')
         .insert({
           question_type: type,
-          passage: data.passage,
-          questions: data.questions || data
+          passage: data.passage || null,
+          questions: data.questions || data,
+          user_id: null // We'll add user authentication later
         })
 
       if (storeError) {

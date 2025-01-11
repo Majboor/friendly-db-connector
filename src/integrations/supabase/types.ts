@@ -54,6 +54,33 @@ export type Database = {
         }
         Relationships: []
       }
+      question_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          passage: string | null
+          question_type: string
+          questions: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          passage?: string | null
+          question_type: string
+          questions?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          passage?: string | null
+          question_type?: string
+          questions?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -22,7 +22,7 @@ export default function AdminAuth() {
             .from("admin_users")
             .select()
             .eq('user_id', session.user.id)
-            .single()
+            .maybeSingle()
 
           if (queryError) {
             console.error("Error checking admin status:", queryError)
@@ -31,6 +31,7 @@ export default function AdminAuth() {
           }
 
           if (!existingAdmin) {
+            console.log("User not found in admin_users, adding now...")
             // Add user to admin_users table if not already an admin
             const { error: insertError } = await supabase
               .from("admin_users")

@@ -37,20 +37,9 @@ export default function Questions() {
     return choice.toLowerCase() === 'choices' ? '' : choice.replace(/^[A-E]\)\s*/, '').trim()
   }
 
-  // Helper function to normalize answer format
-  const normalizeAnswer = (answer: string): string => {
-    return answer.trim().toUpperCase()
-  }
-
-  // Helper function to extract letter from answer
-  const extractAnswerLetter = (answer: string): string => {
-    const letterMatch = answer.match(/^([A-E])\)?/)
-    return letterMatch ? letterMatch[1] : answer
-  }
-
-  // Helper function to validate answer format
-  const isValidAnswer = (answer: string): boolean => {
-    return /^[A-E]$/.test(answer)
+  // Helper function to get letter from index
+  const getLetterFromIndex = (index: number): string => {
+    return String.fromCharCode(65 + index) // A = 65 in ASCII
   }
 
   const generateQuestion = async (type: PromptType) => {
@@ -159,43 +148,23 @@ export default function Questions() {
       return
     }
 
-    // Log raw values for debugging
+    // Log values for debugging
     console.log("Selected Answer:", selectedAnswer)
-    console.log("Raw Correct Answer:", correctAnswer)
+    console.log("Correct Answer:", correctAnswer)
 
-    // First check: Normalize both answers
-    const normalizedCorrect = normalizeAnswer(correctAnswer)
-    const normalizedSelected = normalizeAnswer(selectedAnswer)
+    // Compare the answers (both should be single letters A-E)
+    const isCorrect = selectedAnswer === correctAnswer
 
-    // Second check: Extract just the letter
-    const correctLetter = extractAnswerLetter(normalizedCorrect)
-    const selectedLetter = normalizedSelected // selectedAnswer is already just the letter
-
-    // Log normalized values
-    console.log("Normalized - Selected:", selectedLetter, "Correct:", correctLetter)
-
-    // Third check: Validate answer format
-    if (!isValidAnswer(correctLetter) || !isValidAnswer(selectedLetter)) {
-      console.error("Invalid answer format detected")
-      toast({
-        title: "Error",
-        description: "There was an error checking your answer. Please try again.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Compare the answers and show the appropriate toast
-    const isCorrect = selectedLetter === correctLetter
-    
+    // Show toast with the result
     toast({
-      title: isCorrect ? `Correct! (${selectedLetter})` : `Incorrect (${selectedLetter})`,
+      title: isCorrect ? "Correct!" : "Incorrect",
       description: isCorrect 
-        ? "Great job! Try another question." 
-        : `The correct answer was ${correctLetter}`,
+        ? `Well done! ${selectedAnswer} is the right answer.` 
+        : `The correct answer was ${correctAnswer}. You selected ${selectedAnswer}.`,
       variant: isCorrect ? "default" : "destructive",
     })
 
+    // Move to next question if available
     if (question.questions && currentQuestionIndex < question.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
       setSelectedAnswer(null)
@@ -277,16 +246,16 @@ export default function Questions() {
               >
                 {getCurrentQuestion()?.choices?.map((choice, index) => {
                   const cleanedChoice = cleanChoice(choice)
-                  if (!cleanedChoice) return null // Skip empty or "choices" options
-                  const letterOption = String.fromCharCode(65 + index)
+                  if (!cleanedChoice) return null
+                  const letter = getLetterFromIndex(index)
                   return (
                     <div key={index} className="flex items-center space-x-2">
                       <RadioGroupItem
-                        value={letterOption}
+                        value={letter}
                         id={`choice-${index}`}
                       />
                       <Label htmlFor={`choice-${index}`}>
-                        {letterOption}) {cleanedChoice}
+                        {letter}) {cleanedChoice}
                       </Label>
                     </div>
                   )

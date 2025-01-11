@@ -135,6 +135,22 @@ export default function Questions() {
     setShowRawAnswer(!showRawAnswer)
   }
 
+  const handleNextQuestion = () => {
+    if (question?.questions && currentQuestionIndex < question.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1)
+      setSelectedAnswer(null)
+      setShowRawAnswer(false)
+    }
+  }
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1)
+      setSelectedAnswer(null)
+      setShowRawAnswer(false)
+    }
+  }
+
   return (
     <>
       <WarpSpeedThree isVisible={showRawAnswer} />
@@ -270,6 +286,14 @@ export default function Questions() {
               </div>
 
               <div className="flex gap-4 mt-6">
+                {currentQuestionIndex > 0 && (
+                  <Button
+                    onClick={handlePreviousQuestion}
+                    className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+                  >
+                    Previous
+                  </Button>
+                )}
                 <Button
                   onClick={checkAnswer}
                   disabled={!selectedAnswer}
@@ -277,6 +301,14 @@ export default function Questions() {
                 >
                   {showRawAnswer ? "Hide Answer" : "Show Answer"}
                 </Button>
+                {question.questions && currentQuestionIndex < question.questions.length - 1 && (
+                  <Button
+                    onClick={handleNextQuestion}
+                    className="bg-black/80 text-white hover:bg-black/60 backdrop-blur-sm border border-white/20"
+                  >
+                    Next
+                  </Button>
+                )}
               </div>
 
               {showRawAnswer && getCurrentQuestion()?.correctAnswer && (

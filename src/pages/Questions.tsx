@@ -42,23 +42,12 @@ export default function Questions() {
     return String.fromCharCode(65 + index) // A = 65 in ASCII
   }
 
-  // Helper function to convert letter to index (A=0, B=1, etc)
-  const getIndexFromLetter = (letter: string): number => {
-    return letter.charCodeAt(0) - 65
-  }
-
-  // Helper function to adjust index for choices array that includes "choices"
-  const adjustChoiceIndex = (index: number): number => {
-    return index + 1 // Skip the "choices" element
-  }
-
   const generateQuestion = async (type: PromptType) => {
     console.log("Generating question of type:", type)
     setIsLoading(true)
     setShowRawAnswer(false)
     try {
       let endpoint = ""
-      let response
 
       switch (type) {
         case "math_with_calculator":
@@ -160,28 +149,17 @@ export default function Questions() {
 
     // Log values for debugging
     console.log("Selected Answer:", selectedAnswer)
-    console.log("Correct Answer:", correctAnswer)
+    console.log("Raw Correct Answer:", correctAnswer)
     
-    // Get the index of the correct answer (0-based)
-    const correctIndex = getIndexFromLetter(correctAnswer)
-    
-    // Adjust for the "choices" element in the array
-    const adjustedCorrectIndex = adjustChoiceIndex(correctIndex)
-    
-    // Convert adjusted index back to letter
-    const adjustedCorrectLetter = getLetterFromIndex(adjustedCorrectIndex - 1)
-    
-    console.log("Adjusted Correct Letter:", adjustedCorrectLetter)
-    
-    // Compare the answers
-    const isCorrect = selectedAnswer === adjustedCorrectLetter
+    // Compare the answers directly with the raw answer
+    const isCorrect = selectedAnswer === correctAnswer
 
     // Show toast with the result
     toast({
       title: isCorrect ? "Correct!" : "Incorrect",
       description: isCorrect 
         ? `Well done! ${selectedAnswer} is the right answer.` 
-        : `The correct answer was ${adjustedCorrectLetter}. You selected ${selectedAnswer}.`,
+        : `The correct answer was ${correctAnswer}. You selected ${selectedAnswer}.`,
       variant: isCorrect ? "default" : "destructive",
     })
 
@@ -257,7 +235,7 @@ export default function Questions() {
               </div>
             )}
             
-            <p className="mb-6">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
+            <p className="mb-6 whitespace-pre-line">{getCurrentQuestion()?.question?.replace(/\\n/g, '\n')}</p>
 
             <div className="space-y-4">
               <RadioGroup
@@ -268,7 +246,7 @@ export default function Questions() {
                 {getCurrentQuestion()?.choices?.map((choice, index) => {
                   const cleanedChoice = cleanChoice(choice)
                   if (!cleanedChoice) return null
-                  const letter = getLetterFromIndex(index - 1) // Subtract 1 to account for "choices"
+                  const letter = getLetterFromIndex(index)
                   return (
                     <div key={index} className="flex items-center space-x-2">
                       <RadioGroupItem

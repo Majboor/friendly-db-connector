@@ -38,6 +38,25 @@ export default function Questions() {
     return choice.replace(/^[A-E]\)\s*/, '').trim()
   }
 
+  // Helper function to normalize answer format
+  const normalizeAnswer = (answer: string): string => {
+    // First check: Remove any whitespace and convert to uppercase
+    return answer.trim().toUpperCase()
+  }
+
+  // Helper function to extract letter from answer
+  const extractAnswerLetter = (answer: string): string => {
+    // Second check: Extract just the letter if it's in format "A)" or just "A"
+    const letterMatch = answer.match(/^([A-E])\)?/)
+    return letterMatch ? letterMatch[1] : answer
+  }
+
+  // Helper function to validate answer format
+  const isValidAnswer = (answer: string): boolean => {
+    // Third check: Ensure it's a valid answer format (A-E)
+    return /^[A-E]$/.test(answer)
+  }
+
   const generateQuestion = async (type: PromptType) => {
     console.log("Generating question of type:", type)
     setIsLoading(true)
@@ -135,12 +154,30 @@ export default function Questions() {
     const correctAnswer = currentQuestion.correctAnswer
     if (!correctAnswer) return
 
-    const isCorrect = selectedAnswer === correctAnswer
+    // Apply all three validation checks
+    const normalizedCorrect = normalizeAnswer(correctAnswer)
+    const normalizedSelected = normalizeAnswer(selectedAnswer)
+
+    const correctLetter = extractAnswerLetter(normalizedCorrect)
+    const selectedLetter = extractAnswerLetter(normalizedSelected)
+
+    // Final validation
+    if (!isValidAnswer(correctLetter) || !isValidAnswer(selectedLetter)) {
+      console.error("Invalid answer format detected")
+      toast({
+        title: "Error",
+        description: "There was an error checking your answer. Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const isCorrect = correctLetter === selectedLetter
     toast({
       title: isCorrect ? "Correct!" : "Incorrect",
       description: isCorrect 
         ? "Great job! Try another question." 
-        : `The correct answer was ${correctAnswer}`,
+        : `The correct answer was ${correctLetter}`,
       variant: isCorrect ? "default" : "destructive",
     })
 
@@ -228,7 +265,7 @@ export default function Questions() {
                 {getCurrentQuestion()?.choices?.map((choice, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <RadioGroupItem
-                      value={choice}
+                      value={String.fromCharCode(65 + index)}
                       id={`choice-${index}`}
                     />
                     <Label htmlFor={`choice-${index}`}>

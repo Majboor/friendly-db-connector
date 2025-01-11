@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
@@ -29,33 +29,35 @@ export default function Questions() {
   const { toast } = useToast()
 
   const generateQuestion = async (type: PromptType) => {
+    console.log("Generating question of type:", type)
     setIsLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
+      console.log("Session:", session)
       
       if (!session) {
         throw new Error('No session found. Please log in.')
       }
 
-      const response = await fetch(
-        'https://ecmwlutgcezdgndosiac.supabase.co/functions/v1/generate-question',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ prompt_type: type })
-        }
-      )
+      console.log("Making request to generate-question function")
+      const response = await supabase.functions.invoke('generate-question', {
+        body: { prompt_type: type }
+      })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to generate question')
+      console.log("Response from function:", response)
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to generate question')
       }
 
-      const data = await response.json()
-      const parsedContent = JSON.parse(data.content)
+      if (!response.data) {
+        throw new Error('No data received from the function')
+      }
+
+      console.log("Parsing response data:", response.data)
+      const parsedContent = JSON.parse(response.data.content)
+      console.log("Parsed content:", parsedContent)
+      
       setQuestion(parsedContent)
       setSelectedAnswer(null)
       setCurrentQuestionIndex(0)
@@ -164,24 +166,24 @@ export default function Questions() {
               Question {question.questions ? `${currentQuestionIndex + 1}/${question.questions.length}` : ''}
             </h2>
             
-            {currentQuestionData.sentence && (
+            {getCurrentQuestion()?.sentence && (
               <div className="mb-4">
                 <p className="font-medium">Sentence:</p>
-                <p>{currentQuestionData.sentence}</p>
+                <p>{getCurrentQuestion()?.sentence}</p>
               </div>
             )}
             
-            {currentQuestionData.underlined && (
+            {getCurrentQuestion()?.underlined && (
               <div className="mb-4">
                 <p className="font-medium">Underlined portion:</p>
-                <p className="underline">{currentQuestionData.underlined}</p>
+                <p className="underline">{getCurrentQuestion()?.underlined}</p>
               </div>
             )}
             
-            <p className="mb-6">{currentQuestionData.question}</p>
+            <p className="mb-6">{getCurrentQuestion()?.question}</p>
 
             <div className="space-y-4">
-              {currentQuestionData.choices?.map((choice, index) => (
+              {getCurrentQuestion()?.choices?.map((choice, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="radio"
